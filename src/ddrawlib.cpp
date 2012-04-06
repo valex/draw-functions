@@ -79,7 +79,15 @@ return(1);
 } // end DDraw_Unlock_Surface
 
 ///////////////////////////////////////////////////////////
+int Draw_Line(float x0, float y0, float x1, float y1, COLORREF color,UCHAR *vb_start,int lpitch){
+	int lpitch_4 = lpitch >> 2; // Pixels in Screen Line
 
+	// pre-compute first pixel address in video buffer based on 32bit data
+	DWORD *vb_start4 = (DWORD *)vb_start + (int)x0 + (int)y0*lpitch_4;
+
+
+	return 0;
+}
 int Draw_Text_GDI(char *text, int x,int y,COLORREF color, LPDIRECTDRAWSURFACE7 lpdds)
 {
 	// this function draws the sent text on the sent surface

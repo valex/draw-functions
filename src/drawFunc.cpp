@@ -256,8 +256,7 @@ int Game_Main(void *parms)
 		DDraw_Lock_Back_Surface();
 
 
-		//Draw_Pixel(100,100,0x00FFFFFF,back_buffer,back_lpitch);
-		//*((DWORD*)back_buffer) = 0x00FFFFFF;
+		Draw_Line(0.5,0.5,100.3, 85.4, 0x00FFFFFF, back_buffer, back_lpitch);
 
 
 		sprintf(buffer, "fps: %.1f", fps);
