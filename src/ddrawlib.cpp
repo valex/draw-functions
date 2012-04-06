@@ -79,15 +79,160 @@ return(1);
 } // end DDraw_Unlock_Surface
 
 ///////////////////////////////////////////////////////////
-int Draw_Line(float x0, float y0, float x1, float y1, COLORREF color,UCHAR *vb_start,int lpitch){
-	int lpitch_4 = lpitch >> 2; // Pixels in Screen Line
+int Draw_Line(int x0, int y0, // starting position
+                int x1, int y1, // ending position
+                COLORREF color,     // color index
+                UCHAR *vb_start, int lpitch) // video buffer and memory pitch
+{
+// this function draws a line from xo,yo to x1,y1 using differential error
+// terms (based on Bresenahams work)
 
-	// pre-compute first pixel address in video buffer based on 32bit data
-	DWORD *vb_start4 = (DWORD *)vb_start + (int)x0 + (int)y0*lpitch_4;
+int dx,             // difference in x's
+    dy,             // difference in y's
+    dx2,            // dx,dy * 2
+    dy2,
+    x_inc,          // amount in pixel space to move during drawing
+    y_inc,          // amount in pixel space to move during drawing
+    error,          // the discriminant i.e. error i.e. decision variable
+    index;          // used for looping
 
+int lpitch_4 = lpitch >> 2; // lpitch_4 - pixels per screen line
 
-	return 0;
-}
+// pre-compute first pixel address in video buffer based on 16bit data
+DWORD *vb_start4 = (DWORD *)vb_start + x0 + y0*lpitch_4;
+
+// compute horizontal and vertical deltas
+dx = x1-x0;
+dy = y1-y0;
+
+// test which direction the line is going in i.e. slope angle
+if (dx>=0)
+   {
+   x_inc = 1;
+
+   } // end if line is moving right
+else
+   {
+   x_inc = -1;
+   dx    = -dx;  // need absolute value
+
+   } // end else moving left
+
+// test y component of slope
+
+if (dy>=0)
+   {
+   y_inc = lpitch_4;
+   } // end if line is moving down
+else
+   {
+   y_inc = -lpitch_4;
+   dy    = -dy;  // need absolute value
+
+   } // end else moving up
+
+// compute (dx,dy) * 2
+dx2 = dx << 1;
+dy2 = dy << 1;
+
+// now based on which delta is greater we can draw the line
+if (dx > dy)
+   {
+   // initialize error term
+   error = dy2 - dx;
+
+   // draw the line
+   for (index=0; index <= dx; index++)
+       {
+       // set the pixel
+       *vb_start4 = (DWORD)color;
+
+       // test if error has overflowed
+       if (error >= 0)
+          {
+          error-=dx2;
+
+          // move to next line
+          vb_start4+=y_inc;
+
+	   } // end if error overflowed
+
+       // adjust the error term
+       error+=dy2;
+
+       // move to the next pixel
+       vb_start4+=x_inc;
+
+       } // end for
+
+   } // end if |slope| <= 1
+else
+   {
+   // initialize error term
+   error = dx2 - dy;
+
+   // draw the line
+   for (index=0; index <= dy; index++)
+       {
+       // set the pixel
+       *vb_start4 = (DWORD)color;
+
+       // test if error overflowed
+       if (error >= 0)
+          {
+          error-=dy2;
+
+          // move to next line
+          vb_start4+=x_inc;
+
+          } // end if error overflowed
+
+       // adjust the error term
+       error+=dx2;
+
+       // move to the next pixel
+       vb_start4+=y_inc;
+
+       } // end for
+
+   } // end else |slope| > 1
+
+// return success
+return(0);
+
+} // end Draw_Line
+
+int Draw_Line(	float x0f, float y0f, // starting position
+				float x1f, float y1f, // ending position
+                COLORREF color,     // color index
+                UCHAR *vb_start, int lpitch) // video buffer and memory pitch
+{
+	int x0 = (int)(x0f+0.5);
+	int y0 = (int)(y0f+0.5);
+	int x1 = (int)(x1f+0.5);
+	int y1 = (int)(y1f+0.5);
+
+	Draw_Line(x0,y0,x1,y1,color,vb_start, lpitch);
+
+	// return success
+	return(0);
+} // end Draw_Line
+
+int Draw_Line(	double x0d, double y0d, // starting position
+				double x1d, double y1d, // ending position
+                COLORREF color,     // color index
+                UCHAR *vb_start, int lpitch) // video buffer and memory pitch
+{
+	int x0 = (int)(x0d+0.5);
+	int y0 = (int)(y0d+0.5);
+	int x1 = (int)(x1d+0.5);
+	int y1 = (int)(y1d+0.5);
+
+	Draw_Line(x0,y0,x1,y1,color,vb_start, lpitch);
+	// return success
+	return(0);
+} // end Draw_Line
+
 int Draw_Text_GDI(char *text, int x,int y,COLORREF color, LPDIRECTDRAWSURFACE7 lpdds)
 {
 	// this function draws the sent text on the sent surface

@@ -256,12 +256,12 @@ int Game_Main(void *parms)
 		DDraw_Lock_Back_Surface();
 
 
-		Draw_Line(0.5,0.5,100.3, 85.4, 0x00FFFFFF, back_buffer, back_lpitch);
+		Draw_Line(0.49,0.49,(double)WINDOW_WIDTH-1, (double)WINDOW_HEIGHT-1, 0x00FFFFFF, back_buffer, back_lpitch);
 
 
 		sprintf(buffer, "fps: %.1f", fps);
 		Draw_Text_GDI(buffer, 10,150,_RGB32BIT(0, 0, 255,0), lpddsback);
-		sprintf(buffer, "start_frame_time: %u", start_frame_time);
+		sprintf(buffer, "back_lpitch: %u", back_lpitch);
 		Draw_Text_GDI(buffer, 10,170,_RGB32BIT(0, 0, 255,0), lpddsback);
 		//Draw_Circle(450,450,77,_RGB32BIT(0, 255, 255,255),back_buffer,back_lpitch);
 
