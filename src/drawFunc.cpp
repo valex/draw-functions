@@ -275,7 +275,7 @@ int Game_Main(void *parms)
 		//Draw_Circle(200.,200.,10., 0x0000FF00, back_buffer, back_lpitch);
 		//Draw_Fill_Circle(200.2,200.1,50., 0x00FF0000, back_buffer, back_lpitch);
 		//Draw_Circle(200,200,10, 0x000000FF, back_buffer, back_lpitch);
-		Draw_Gradient_Circle(200,200,50, 0x00FFAA88, 0x00FF0000, back_buffer, back_lpitch);
+		Draw_Gradient_Circle(200.9,200.1,50.9, 0x00FF0000, 0x000000FF, back_buffer, back_lpitch);
 
 
 //		Radial Gradient

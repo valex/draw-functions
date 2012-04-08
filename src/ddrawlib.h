@@ -53,6 +53,8 @@ int Draw_Fill_Circle (float xcf, float ycf, float radiusf, COLORREF color,UCHAR 
 int Draw_Fill_Circle (double xcd, double ycd, double radiusd, COLORREF color,UCHAR *dest_buffer,int lpitch);
 
 int Draw_Gradient_Circle (int xc, int yc, int radius, COLORREF fromColor, COLORREF toColor, UCHAR *dest_buffer,int lpitch);
+int Draw_Gradient_Circle (float xcf, float ycf, float radiusf, COLORREF fromColor, COLORREF toColor, UCHAR *dest_buffer,int lpitch);
+int Draw_Gradient_Circle (double xcd, double ycd, double radiusd, COLORREF fromColor, COLORREF toColor, UCHAR *dest_buffer,int lpitch);
 
 // general utility functions
 DWORD Get_Clock(void);

@@ -103,6 +103,28 @@ int Draw_Gradient_Circle (int xc, int yc, int radius, COLORREF fromColor, COLORR
 	return 0;
 }
 ///////////////////////////////////////////////////////////
+int Draw_Gradient_Circle (float xcf, float ycf, float radiusf, COLORREF fromColor, COLORREF toColor, UCHAR *dest_buffer,int lpitch){
+	int xc = (int)(xcf+0.5);
+	int yc = (int)(ycf+0.5);
+	int radius = (int)(radiusf+0.5);
+
+	Draw_Gradient_Circle (xc, yc, radius, fromColor, toColor, dest_buffer, lpitch);
+
+	return 0;
+}
+
+//////////////////////////////////////////////////////////////
+int Draw_Gradient_Circle (double xcd, double ycd, double radiusd, COLORREF fromColor, COLORREF toColor, UCHAR *dest_buffer,int lpitch){
+	int xc = (int)(xcd+0.5);
+	int yc = (int)(ycd+0.5);
+	int radius = (int)(radiusd+0.5);
+
+	Draw_Gradient_Circle (xc, yc, radius, fromColor, toColor, dest_buffer, lpitch);
+
+	return 0;
+}
+
+/////////////////////////////////////////////////////////////
 int Draw_Fill_Circle (int xc, int yc, int radius, COLORREF color,UCHAR *dest_buffer,int lpitch){
 
 	int xs, xe;
