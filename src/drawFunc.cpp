@@ -256,8 +256,20 @@ int Game_Main(void *parms)
 		DDraw_Lock_Back_Surface();
 
 
+		//Draw_HLine(1.,30.9,3.,30.5,RGB(255,255,255), back_buffer, back_lpitch);
 		//Draw_Line(0.49,0.49,(double)WINDOW_WIDTH-1, (double)WINDOW_HEIGHT-1, 0x00FFFFFF, back_buffer, back_lpitch);
-		Draw_Circle(200.9,200.1,8.4, 0x00FFFFFF, back_buffer, back_lpitch);
+		//Draw_Circle(200,200,10, 0x0000FF00, back_buffer, back_lpitch);
+		Draw_Fill_Circle(200.2,200.9,10.9, 0x00FFFFFF, back_buffer, back_lpitch);
+		//Draw_Circle(200,200,10, 0x000000FF, back_buffer, back_lpitch);
+//		Radial Gradient
+//		For each pixel, calculate its distance from the center pixel, and use that as a percentage of the gradient color delta. So color would be:
+//
+//		pixel color = d1/d2 * gradient color delta,
+//
+//		where d1 is center - pixel,
+//		d2 is center - min(w,h) of bitmap dimensions,
+//		and gradient color delta is (r2-r1) or (g2-g1) or (b2-b1) of your gradient.
+
 
 		sprintf(buffer, "fps: %.1f", fps);
 		Draw_Text_GDI(buffer, 10,150,_RGB32BIT(0, 0, 255,0), lpddsback);

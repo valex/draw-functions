@@ -38,7 +38,59 @@ int window_client_x0   = 0;   // used to track the starting (x,y) client area fo
 int window_client_y0   = 0;   // for windowed mode directdraw operations
 
 //////////////////////////////////////////////////////////
+int Draw_Fill_Circle (int xc, int yc, int radius, COLORREF color,UCHAR *dest_buffer,int lpitch){
+
+	int xs, xe;
+	int ymin = yc-radius;
+	int ymax = yc;
+	int delta;
+
+	if(radius <0) return 1;
+
+	if(radius == 0) {
+		Draw_HLine (xc, yc, xc, yc, color,dest_buffer,lpitch);
+		return 0;
+	}
+
+	for (int yscan=ymin; yscan<=ymax; ++yscan){
+		xs=int(xc-sqrt((radius*radius)-((yscan-(yc-0.5))*(yscan-(yc-0.5))))+0.5);
+        xe=int(xc+sqrt((radius*radius)-((yscan-(yc-0.5))*(yscan-(yc-0.5))))+0.5);
+
+        delta = (xs-xc)*(xs-xc) + (yscan-yc)*(yscan-yc) - (radius*radius);
+        if(delta >=radius){--xe; ++xs;}
+
+		Draw_HLine (xs, yscan, xe, yscan, color,dest_buffer,lpitch);
+		Draw_HLine (xs, yc+(yc-yscan), xe, yc+(yc-yscan), color,dest_buffer,lpitch);
+	}
+
+	return 0;
+}
+//////////////////////////////////////////////////////////
+int Draw_Fill_Circle (float xcf, float ycf, float radiusf, COLORREF color,UCHAR *dest_buffer,int lpitch){
+	int xc = (int)(xcf+0.5);
+	int yc = (int)(ycf+0.5);
+	int radius = (int)(radiusf+0.5);
+
+	Draw_Fill_Circle (xc, yc, radius, color, dest_buffer, lpitch);
+
+	return 0;
+}
+
+//////////////////////////////////////////////////////////
+int Draw_Fill_Circle (double xcd, double ycd, double radiusd, COLORREF color,UCHAR *dest_buffer,int lpitch){
+	int xc = (int)(xcd+0.5);
+	int yc = (int)(ycd+0.5);
+	int radius = (int)(radiusd+0.5);
+
+	Draw_Fill_Circle (xc, yc, radius, color, dest_buffer, lpitch);
+
+	return 0;
+}
+
+//////////////////////////////////////////////////////////
 int Draw_Circle (int xc, int yc, int radius, COLORREF color,UCHAR *dest_buffer,int lpitch){
+
+	if (radius < 0) return 0;
 
 	int lpitch_4 = lpitch >> 2; // lpitch_4 - pixels per screen line
 
@@ -144,6 +196,87 @@ lpdds->Unlock(NULL);
 return(1);
 } // end DDraw_Unlock_Surface
 
+///////////////////////////////////////////////////////////
+int Draw_HLine(int x0, int y0, // starting position
+                int x1, int y1, // ending position
+                COLORREF color,     // color index
+                UCHAR *dest_buffer, int lpitch) // video buffer and memory pitch
+{
+// this function draws a horizontal line from xo,yo to x1,y1 using differential error
+// terms (based on Bresenahams work)
+	if(y1 != y0) return (1);
+
+	int lpitch_4 = lpitch >> 2; // lpitch_4 - pixels per screen line
+
+	// pre-compute first pixel address in video buffer based on 16bit data
+	DWORD *dest_buffer4 = (DWORD *)dest_buffer + x0 + y0*lpitch_4;
+
+
+	int dx,             // difference in x's
+    	x_inc,          // amount in pixel space to move during drawing
+    	index;          // used for looping
+
+
+
+	// compute horizontal and vertical deltas
+	dx = x1-x0;
+
+	// test which direction the line is going in i.e. slope angle
+	if (dx>=0)   {
+		x_inc = 1;
+	} // end if line is moving right
+	else{
+		x_inc = -1;
+		dx    = -dx;  // need absolute value
+	} // end else moving left
+
+
+   // draw the line
+   for (index=0; index <= dx; ++index)
+   {
+       // set the pixel
+       *dest_buffer4 = (DWORD)color;
+
+       // move to the next pixel
+       dest_buffer4+=x_inc;
+
+   } // end for
+
+   // return success
+   return(0);
+} // end Draw_HLine
+
+///////////////////////////////////////////////////////////
+int Draw_HLine(	float x0f, float y0f, // starting position
+				float x1f, float y1f, // ending position
+                COLORREF color,     // color index
+                UCHAR *dest_buffer, int lpitch) // video buffer and memory pitch
+{
+	int x0 = (int)(x0f+0.5);
+	int y0 = (int)(y0f+0.5);
+	int x1 = (int)(x1f+0.5);
+	int y1 = (int)(y1f+0.5);
+
+	Draw_HLine(x0,y0,x1,y1,color,dest_buffer, lpitch);
+
+	// return success
+	return(0);
+} // end Draw_HLine
+///////////////////////////////////////////////////////////
+int Draw_HLine(	double x0d, double y0d, // starting position
+				double x1d, double y1d, // ending position
+                COLORREF color,     // color index
+                UCHAR *dest_buffer, int lpitch) // video buffer and memory pitch
+{
+	int x0 = (int)(x0d+0.5);
+	int y0 = (int)(y0d+0.5);
+	int x1 = (int)(x1d+0.5);
+	int y1 = (int)(y1d+0.5);
+
+	Draw_HLine(x0,y0,x1,y1,color,dest_buffer, lpitch);
+	// return success
+	return(0);
+} // end Draw_HLine
 ///////////////////////////////////////////////////////////
 int Draw_Line(int x0, int y0, // starting position
                 int x1, int y1, // ending position
