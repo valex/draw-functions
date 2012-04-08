@@ -40,6 +40,10 @@ int Draw_Line(int x0, int y0, int x1, int y1, COLORREF color,UCHAR *vb_start,int
 int Draw_Line(float x0f, float y0f, float x1f, float y1f, COLORREF color,UCHAR *vb_start,int lpitch);
 int Draw_Line(double x0d, double y0d, double x1d, double y1d, COLORREF color,UCHAR *vb_start,int lpitch);
 
+int Draw_Circle (int xc, int yc, int radius, COLORREF color,UCHAR *vb_start,int lpitch);
+int Draw_Circle (float xcf, float ycf, float radiusf, COLORREF color,UCHAR *vb_start,int lpitch);
+int Draw_Circle (double xcd, double ycd, double radiusd, COLORREF color,UCHAR *vb_start,int lpitch);
+
 
 // general utility functions
 DWORD Get_Clock(void);

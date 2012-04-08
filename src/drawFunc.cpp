@@ -256,8 +256,8 @@ int Game_Main(void *parms)
 		DDraw_Lock_Back_Surface();
 
 
-		Draw_Line(0.49,0.49,(double)WINDOW_WIDTH-1, (double)WINDOW_HEIGHT-1, 0x00FFFFFF, back_buffer, back_lpitch);
-
+		//Draw_Line(0.49,0.49,(double)WINDOW_WIDTH-1, (double)WINDOW_HEIGHT-1, 0x00FFFFFF, back_buffer, back_lpitch);
+		Draw_Circle(200.9,200.1,8.4, 0x00FFFFFF, back_buffer, back_lpitch);
 
 		sprintf(buffer, "fps: %.1f", fps);
 		Draw_Text_GDI(buffer, 10,150,_RGB32BIT(0, 0, 255,0), lpddsback);

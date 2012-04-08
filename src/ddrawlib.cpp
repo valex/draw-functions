@@ -38,9 +38,75 @@ int window_client_x0   = 0;   // used to track the starting (x,y) client area fo
 int window_client_y0   = 0;   // for windowed mode directdraw operations
 
 //////////////////////////////////////////////////////////
+int Draw_Circle (int xc, int yc, int radius, COLORREF color,UCHAR *vb_start,int lpitch){
+
+	int lpitch_4 = lpitch >> 2; // lpitch_4 - pixels per screen line
+
+	DWORD *vb_start4 = (DWORD *)vb_start;
+
+	int x = 0;
+	int y = radius;
+	int d = 1 - radius;
+	int delta1 = 3;
+	int delta2 = -2*radius+5;
+
+	//начальные точки
+	vb_start4[(xc + x)+(yc + y)*lpitch_4] = color;
+	vb_start4[(xc + y)+(yc + x)*lpitch_4] = color;
+	vb_start4[(xc + y)+(yc - x)*lpitch_4] = color;
+	vb_start4[(xc + x)+(yc - y)*lpitch_4] = color;
+	vb_start4[(xc - x)+(yc - y)*lpitch_4] = color;
+	vb_start4[(xc - y)+(yc - x)*lpitch_4] = color;
+	vb_start4[(xc - y)+(yc + x)*lpitch_4] = color;
+	vb_start4[(xc - x)+(yc + y)*lpitch_4] = color;
+
+	while(y>x){
+		if(d<0){
+			d+=delta1;
+			delta1+=2;
+			delta2+=2;
+			++x;
+		}else{
+			d+=delta2;
+			delta1 +=2;
+			delta2+=4;
+			++x;
+			--y;
+		}
+		vb_start4[(xc + x)+(yc + y)*lpitch_4] = color;
+		vb_start4[(xc + y)+(yc + x)*lpitch_4] = color;
+		vb_start4[(xc + y)+(yc - x)*lpitch_4] = color;
+		vb_start4[(xc + x)+(yc - y)*lpitch_4] = color;
+		vb_start4[(xc - x)+(yc - y)*lpitch_4] = color;
+		vb_start4[(xc - y)+(yc - x)*lpitch_4] = color;
+		vb_start4[(xc - y)+(yc + x)*lpitch_4] = color;
+		vb_start4[(xc - x)+(yc + y)*lpitch_4] = color;
+	}
+	return 0;
+}
+//////////////////////////////////////////////////////////
+int Draw_Circle (float xcf, float ycf, float radiusf, COLORREF color,UCHAR *vb_start,int lpitch){
+
+	int xc = (int)(xcf+0.5);
+	int yc = (int)(ycf+0.5);
+	int radius = (int)(radiusf+0.5);
+
+	Draw_Circle (xc, yc, radius, color, vb_start, lpitch);
+
+	return 0;
+}
+/////////////////////////////////////////////////////////
+int Draw_Circle (double xcd, double ycd, double radiusd, COLORREF color,UCHAR *vb_start,int lpitch){
+	int xc = (int)(xcd+0.5);
+	int yc = (int)(ycd+0.5);
+	int radius = (int)(radiusd+0.5);
+
+	Draw_Circle (xc, yc, radius, color, vb_start, lpitch);
+
+	return 0;
+}
 
 //////////////////////////////////////////////////////////
-
 UCHAR *DDraw_Lock_Surface(LPDIRECTDRAWSURFACE7 lpdds, int *lpitch)
 {
 	// this function locks the sent surface and returns a pointer to it
