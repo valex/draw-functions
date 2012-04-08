@@ -253,14 +253,31 @@ int Game_Main(void *parms)
 		//выполнить все необходимые расчеты с учетом прошедшего времени
 
 
+		//масштабирование шара
+//		if(keyboard_state[DIK_NUMPADPLUS]){
+//			if(radius < WINDOW_HEIGHT/2 - 1
+//					&& radius < WINDOW_WIDTH/2 - 1){
+//				radius+=0.1;
+//			}
+//		}
+//
+//		if(keyboard_state[DIK_NUMPADMINUS]){
+//			if(radius > 0){
+//				radius-=0.1;
+//			}
+//		}
+
 		DDraw_Lock_Back_Surface();
 
 
 		//Draw_HLine(1.,30.9,3.,30.5,RGB(255,255,255), back_buffer, back_lpitch);
 		//Draw_Line(0.49,0.49,(double)WINDOW_WIDTH-1, (double)WINDOW_HEIGHT-1, 0x00FFFFFF, back_buffer, back_lpitch);
-		//Draw_Circle(200,200,10, 0x0000FF00, back_buffer, back_lpitch);
-		Draw_Fill_Circle(200.2,200.9,10.9, 0x00FFFFFF, back_buffer, back_lpitch);
+		//Draw_Circle(200.,200.,10., 0x0000FF00, back_buffer, back_lpitch);
+		//Draw_Fill_Circle(200.2,200.1,50., 0x00FF0000, back_buffer, back_lpitch);
 		//Draw_Circle(200,200,10, 0x000000FF, back_buffer, back_lpitch);
+		Draw_Gradient_Circle(200,200,50, 0x00FFAA88, 0x00FF0000, back_buffer, back_lpitch);
+
+
 //		Radial Gradient
 //		For each pixel, calculate its distance from the center pixel, and use that as a percentage of the gradient color delta. So color would be:
 //

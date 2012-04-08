@@ -38,6 +38,71 @@ int window_client_x0   = 0;   // used to track the starting (x,y) client area fo
 int window_client_y0   = 0;   // for windowed mode directdraw operations
 
 //////////////////////////////////////////////////////////
+int Draw_Gradient_Circle (int xc, int yc, int radius, COLORREF fromColor, COLORREF toColor, UCHAR *dest_buffer,int lpitch){
+
+	int xs, xe;
+	int ymin = yc-radius;
+	int ymax = yc;
+	int delta;
+
+	if(radius <0) return 1;
+
+	if(radius == 0) {
+		Draw_HLine (xc, yc, xc, yc, toColor,dest_buffer,lpitch);
+		return 0;
+	}
+
+	int lpitch_4 = lpitch >> 2; // lpitch_4 - pixels per screen line
+
+	DWORD *dest_buffer4 = (DWORD *)dest_buffer;
+
+	int RfromColor = (fromColor >> 16) & 0x000000FF;
+	int GfromColor = (fromColor >> 8) & 0x000000FF;
+	int BfromColor = fromColor & 0x000000FF;
+
+	int RtoColor = (toColor >> 16) & 0x000000FF;
+	int GtoColor = (toColor >> 8) & 0x000000FF;
+	int BtoColor = toColor & 0x000000FF;
+
+	int deltaR = RtoColor - RfromColor;
+	int deltaG = GtoColor - GfromColor;
+	int deltaB = BtoColor - BfromColor;
+
+
+	for (int yscan=ymin; yscan<=ymax; ++yscan){
+		xs=int(xc-sqrt((radius*radius)-((yscan-(yc-0.5))*(yscan-(yc-0.5))))+0.5);
+        xe=int(xc+sqrt((radius*radius)-((yscan-(yc-0.5))*(yscan-(yc-0.5))))+0.5);
+
+        delta = (xs-xc)*(xs-xc) + (yscan-yc)*(yscan-yc) - (radius*radius);
+        if(delta >=radius){--xe; ++xs;}
+
+        for (int x = xs; x<=xe; ++x){
+        	//расчитать расстояние до центра круга
+        	float dist = sqrt((x-xc)*(x-xc) + (yscan-yc)*(yscan-yc));
+        	int Rcolor = abs((int)(RfromColor + deltaR*dist/radius + 0.5));
+        	int Gcolor = abs((int)(GfromColor + deltaG*dist/radius + 0.5));
+        	int Bcolor = abs((int)(BfromColor + deltaB*dist/radius + 0.5));
+        	int color = (Rcolor << 16) + (Gcolor << 8) + Bcolor;
+        	dest_buffer4[x+yscan*lpitch_4] = color;
+        }
+
+        for (int x = xs; x<=xe; ++x){
+        	//расчитать расстояние до центра круга
+        	float dist = sqrt((x-xc)*(x-xc) + (yscan-yc)*(yscan-yc));
+        	int Rcolor = abs((int)(RfromColor + deltaR*dist/radius + 0.5));
+        	int Gcolor = abs((int)(GfromColor + deltaG*dist/radius + 0.5));
+        	int Bcolor = abs((int)(BfromColor + deltaB*dist/radius + 0.5));
+        	int color = (Rcolor << 16) + (Gcolor << 8) + Bcolor;
+        	dest_buffer4[x+(yc+(yc-yscan))*lpitch_4] = color;
+        }
+
+		//Draw_HLine (xs, yscan, xe, yscan, fromColor,dest_buffer,lpitch);
+		//Draw_HLine (xs, yc+(yc-yscan), xe, yc+(yc-yscan), fromColor,dest_buffer,lpitch);
+	}
+
+	return 0;
+}
+///////////////////////////////////////////////////////////
 int Draw_Fill_Circle (int xc, int yc, int radius, COLORREF color,UCHAR *dest_buffer,int lpitch){
 
 	int xs, xe;
@@ -60,6 +125,8 @@ int Draw_Fill_Circle (int xc, int yc, int radius, COLORREF color,UCHAR *dest_buf
         if(delta >=radius){--xe; ++xs;}
 
 		Draw_HLine (xs, yscan, xe, yscan, color,dest_buffer,lpitch);
+
+		//отразить симметрично гориз оси
 		Draw_HLine (xs, yc+(yc-yscan), xe, yc+(yc-yscan), color,dest_buffer,lpitch);
 	}
 
