@@ -228,10 +228,8 @@ int Game_Init(void *parms)
 ///////////////////////////////////////////////////////////
 int Game_Main(void *parms)
 {
-
-
 	// clear the drawing surface
-	DDraw_Fill_Surface(lpddsback, 0);
+	DDraw_Fill_Surface(lpddsback, defBckColor);
 
 	// чтение состояния клавиатуры и мыши
 	DInput_Read_Keyboard();
@@ -270,27 +268,21 @@ int Game_Main(void *parms)
 		DDraw_Lock_Back_Surface();
 
 
-		//Draw_HLine(1.,30.9,3.,30.5,RGB(255,255,255), back_buffer, back_lpitch);
-		//Draw_Line(0.49,0.49,(double)WINDOW_WIDTH-1, (double)WINDOW_HEIGHT-1, 0x00FFFFFF, back_buffer, back_lpitch);
+		//Draw_HLine(1.,30.9,300.,30.5,0x000000FF, back_buffer, back_lpitch);
+		//Draw_Line(0.49,0.49,(double)WINDOW_WIDTH-1, (double)WINDOW_HEIGHT-1, 0x000000FF, back_buffer, back_lpitch);
 		//Draw_Circle(200.,200.,10., 0x0000FF00, back_buffer, back_lpitch);
 		//Draw_Fill_Circle(200.2,200.1,50., 0x00FF0000, back_buffer, back_lpitch);
 		//Draw_Circle(200,200,10, 0x000000FF, back_buffer, back_lpitch);
-		Draw_Gradient_Circle(200.9,200.1,50.9, 0x00FF0000, 0x000000FF, back_buffer, back_lpitch);
-
-
-//		Radial Gradient
-//		For each pixel, calculate its distance from the center pixel, and use that as a percentage of the gradient color delta. So color would be:
-//
-//		pixel color = d1/d2 * gradient color delta,
-//
-//		where d1 is center - pixel,
-//		d2 is center - min(w,h) of bitmap dimensions,
-//		and gradient color delta is (r2-r1) or (g2-g1) or (b2-b1) of your gradient.
+		Draw_Gradient_Circle(200.9,200.1,50.9, 0x000000CD, 0x00FF6347, back_buffer, back_lpitch);
+		Draw_Line(1,1,700, 600, 0x00FFFFFF, back_buffer, back_lpitch);
+		Draw_WuLine(0.,5.5,700.5, 605., 0x00FFFFFF, back_buffer, back_lpitch);
+		Draw_WuLine(0.,500.5,700.5, 5., 0x00FFFFFF, back_buffer, back_lpitch);
+		Draw_WuLine(590.5, 500.99, 600.0,0.0, 0x0000FF00, back_buffer, back_lpitch);
 
 
 		sprintf(buffer, "fps: %.1f", fps);
 		Draw_Text_GDI(buffer, 10,150,_RGB32BIT(0, 0, 255,0), lpddsback);
-		sprintf(buffer, "back_lpitch: %u", back_lpitch);
+		sprintf(buffer, "GetSysColor: %u", GetSysColor(COLOR_WINDOWFRAME));
 		Draw_Text_GDI(buffer, 10,170,_RGB32BIT(0, 0, 255,0), lpddsback);
 		//Draw_Circle(450,450,77,_RGB32BIT(0, 255, 255,255),back_buffer,back_lpitch);
 

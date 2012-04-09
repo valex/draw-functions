@@ -30,6 +30,9 @@ int                  back_lpitch     = 0;    // memory line pitch for back buffe
 
 int dd_pixel_format;  // default pixel format
 
+//default background color
+int defBckColor = 0x00000000;
+
 // these are overwritten globally by DDraw_Init()
 int screen_width,            // width of screen
     screen_height;           // height of screen
@@ -38,7 +41,15 @@ int window_client_x0   = 0;   // used to track the starting (x,y) client area fo
 int window_client_y0   = 0;   // for windowed mode directdraw operations
 
 //////////////////////////////////////////////////////////
-int Draw_Gradient_Circle (int xc, int yc, int radius, COLORREF fromColor, COLORREF toColor, UCHAR *dest_buffer,int lpitch){
+int Draw_Gradient_Circle (int xc, int yc, int radius, DWORD fromColor, DWORD toColor, UCHAR *dest_buffer,int lpitch){
+	//		Radial Gradient
+	//		For each pixel, calculate its distance from the center pixel, and use that as a percentage of the gradient color delta. So color would be:
+	//
+	//		pixel color = d1/d2 * gradient color delta,
+	//
+	//		where d1 is center - pixel,
+	//		d2 is center - min(w,h) of bitmap dimensions,
+	//		and gradient color delta is (r2-r1) or (g2-g1) or (b2-b1) of your gradient.
 
 	int xs, xe;
 	int ymin = yc-radius;
@@ -56,19 +67,7 @@ int Draw_Gradient_Circle (int xc, int yc, int radius, COLORREF fromColor, COLORR
 
 	DWORD *dest_buffer4 = (DWORD *)dest_buffer;
 
-	int RfromColor = (fromColor >> 16) & 0x000000FF;
-	int GfromColor = (fromColor >> 8) & 0x000000FF;
-	int BfromColor = fromColor & 0x000000FF;
-
-	int RtoColor = (toColor >> 16) & 0x000000FF;
-	int GtoColor = (toColor >> 8) & 0x000000FF;
-	int BtoColor = toColor & 0x000000FF;
-
-	int deltaR = RtoColor - RfromColor;
-	int deltaG = GtoColor - GfromColor;
-	int deltaB = BtoColor - BfromColor;
-
-
+	//цикл заполнени€ круга цветом
 	for (int yscan=ymin; yscan<=ymax; ++yscan){
 		xs=int(xc-sqrt((radius*radius)-((yscan-(yc-0.5))*(yscan-(yc-0.5))))+0.5);
         xe=int(xc+sqrt((radius*radius)-((yscan-(yc-0.5))*(yscan-(yc-0.5))))+0.5);
@@ -76,34 +75,25 @@ int Draw_Gradient_Circle (int xc, int yc, int radius, COLORREF fromColor, COLORR
         delta = (xs-xc)*(xs-xc) + (yscan-yc)*(yscan-yc) - (radius*radius);
         if(delta >=radius){--xe; ++xs;}
 
+        //заполнение круга цветом
         for (int x = xs; x<=xe; ++x){
         	//расчитать рассто€ние до центра круга
         	float dist = sqrt((x-xc)*(x-xc) + (yscan-yc)*(yscan-yc));
-        	int Rcolor = abs((int)(RfromColor + deltaR*dist/radius + 0.5));
-        	int Gcolor = abs((int)(GfromColor + deltaG*dist/radius + 0.5));
-        	int Bcolor = abs((int)(BfromColor + deltaB*dist/radius + 0.5));
-        	int color = (Rcolor << 16) + (Gcolor << 8) + Bcolor;
-        	dest_buffer4[x+yscan*lpitch_4] = color;
-        }
+        	if(dist > radius) {dist = radius;}
+        	DWORD color = GetGradientColor(fromColor, toColor, dist/radius);
 
-        for (int x = xs; x<=xe; ++x){
-        	//расчитать рассто€ние до центра круга
-        	float dist = sqrt((x-xc)*(x-xc) + (yscan-yc)*(yscan-yc));
-        	int Rcolor = abs((int)(RfromColor + deltaR*dist/radius + 0.5));
-        	int Gcolor = abs((int)(GfromColor + deltaG*dist/radius + 0.5));
-        	int Bcolor = abs((int)(BfromColor + deltaB*dist/radius + 0.5));
-        	int color = (Rcolor << 16) + (Gcolor << 8) + Bcolor;
+        	//верхн€€ часть
+        	dest_buffer4[x+yscan*lpitch_4] = color;
+
+        	//нижн€€ часть
         	dest_buffer4[x+(yc+(yc-yscan))*lpitch_4] = color;
         }
-
-		//Draw_HLine (xs, yscan, xe, yscan, fromColor,dest_buffer,lpitch);
-		//Draw_HLine (xs, yc+(yc-yscan), xe, yc+(yc-yscan), fromColor,dest_buffer,lpitch);
 	}
 
 	return 0;
 }
 ///////////////////////////////////////////////////////////
-int Draw_Gradient_Circle (float xcf, float ycf, float radiusf, COLORREF fromColor, COLORREF toColor, UCHAR *dest_buffer,int lpitch){
+int Draw_Gradient_Circle (float xcf, float ycf, float radiusf, DWORD fromColor, DWORD toColor, UCHAR *dest_buffer,int lpitch){
 	int xc = (int)(xcf+0.5);
 	int yc = (int)(ycf+0.5);
 	int radius = (int)(radiusf+0.5);
@@ -114,7 +104,7 @@ int Draw_Gradient_Circle (float xcf, float ycf, float radiusf, COLORREF fromColo
 }
 
 //////////////////////////////////////////////////////////////
-int Draw_Gradient_Circle (double xcd, double ycd, double radiusd, COLORREF fromColor, COLORREF toColor, UCHAR *dest_buffer,int lpitch){
+int Draw_Gradient_Circle (double xcd, double ycd, double radiusd, DWORD fromColor, DWORD toColor, UCHAR *dest_buffer,int lpitch){
 	int xc = (int)(xcd+0.5);
 	int yc = (int)(ycd+0.5);
 	int radius = (int)(radiusd+0.5);
@@ -125,7 +115,7 @@ int Draw_Gradient_Circle (double xcd, double ycd, double radiusd, COLORREF fromC
 }
 
 /////////////////////////////////////////////////////////////
-int Draw_Fill_Circle (int xc, int yc, int radius, COLORREF color,UCHAR *dest_buffer,int lpitch){
+int Draw_Fill_Circle (int xc, int yc, int radius, DWORD color,UCHAR *dest_buffer,int lpitch){
 
 	int xs, xe;
 	int ymin = yc-radius;
@@ -155,7 +145,7 @@ int Draw_Fill_Circle (int xc, int yc, int radius, COLORREF color,UCHAR *dest_buf
 	return 0;
 }
 //////////////////////////////////////////////////////////
-int Draw_Fill_Circle (float xcf, float ycf, float radiusf, COLORREF color,UCHAR *dest_buffer,int lpitch){
+int Draw_Fill_Circle (float xcf, float ycf, float radiusf, DWORD color,UCHAR *dest_buffer,int lpitch){
 	int xc = (int)(xcf+0.5);
 	int yc = (int)(ycf+0.5);
 	int radius = (int)(radiusf+0.5);
@@ -166,7 +156,7 @@ int Draw_Fill_Circle (float xcf, float ycf, float radiusf, COLORREF color,UCHAR 
 }
 
 //////////////////////////////////////////////////////////
-int Draw_Fill_Circle (double xcd, double ycd, double radiusd, COLORREF color,UCHAR *dest_buffer,int lpitch){
+int Draw_Fill_Circle (double xcd, double ycd, double radiusd, DWORD color,UCHAR *dest_buffer,int lpitch){
 	int xc = (int)(xcd+0.5);
 	int yc = (int)(ycd+0.5);
 	int radius = (int)(radiusd+0.5);
@@ -177,7 +167,7 @@ int Draw_Fill_Circle (double xcd, double ycd, double radiusd, COLORREF color,UCH
 }
 
 //////////////////////////////////////////////////////////
-int Draw_Circle (int xc, int yc, int radius, COLORREF color,UCHAR *dest_buffer,int lpitch){
+int Draw_Circle (int xc, int yc, int radius, DWORD color,UCHAR *dest_buffer,int lpitch){
 
 	if (radius < 0) return 0;
 
@@ -226,7 +216,7 @@ int Draw_Circle (int xc, int yc, int radius, COLORREF color,UCHAR *dest_buffer,i
 	return 0;
 }
 //////////////////////////////////////////////////////////
-int Draw_Circle (float xcf, float ycf, float radiusf, COLORREF color,UCHAR *dest_buffer,int lpitch){
+int Draw_Circle (float xcf, float ycf, float radiusf, DWORD color,UCHAR *dest_buffer,int lpitch){
 
 	int xc = (int)(xcf+0.5);
 	int yc = (int)(ycf+0.5);
@@ -237,7 +227,7 @@ int Draw_Circle (float xcf, float ycf, float radiusf, COLORREF color,UCHAR *dest
 	return 0;
 }
 /////////////////////////////////////////////////////////
-int Draw_Circle (double xcd, double ycd, double radiusd, COLORREF color,UCHAR *dest_buffer,int lpitch){
+int Draw_Circle (double xcd, double ycd, double radiusd, DWORD color,UCHAR *dest_buffer,int lpitch){
 	int xc = (int)(xcd+0.5);
 	int yc = (int)(ycd+0.5);
 	int radius = (int)(radiusd+0.5);
@@ -246,6 +236,139 @@ int Draw_Circle (double xcd, double ycd, double radiusd, COLORREF color,UCHAR *d
 
 	return 0;
 }
+///////////////////////////////////////////////////////////
+int Draw_WuLine(double x0, double y0, // starting position
+                double x1, double y1, // ending position
+                DWORD color,     // color index
+                UCHAR *dest_buffer, int lpitch) // video buffer and memory pitch
+{
+
+
+	// this function draws a Wu line from xo,yo to x1,y1
+	int lpitch_4 = lpitch >> 2; // lpitch_4 - pixels per screen line
+	DWORD *dest_buffer4 = (DWORD *)dest_buffer;
+
+	double temp, //for swaps
+		gradient,
+		xd, yd;
+
+	DWORD pixelColor;
+	int xend, yend, //дл€ обработки крайних точек
+		xscan, xfinal, yscan, yfinal, //дл€ цикла
+		xi,yi;
+
+	double dx = x1 - x0;
+	if(dx<0) {dx = -dx;}
+	double dy = y1 - y0;
+	if(dy<0) {dy = -dy;}
+
+	if(dx > dy){
+		dx = x1 - x0;
+		if(dx < 0){
+			//помен€ть местами точки
+			temp = x0;
+			x0=x1;
+			x1 = temp;
+			temp = y0;
+			y0=y1;
+			y1=temp;
+
+			dx = x1 - x0;
+		}
+		dy = y1 - y0;
+
+		gradient = dy/dx;
+
+		//обработать начальную точку
+		xend = (int)x0; //округление вниз
+		yend = (int)y0; //округление вниз
+
+		//(x0 - (int)x0) - выделение части числа после зап€той
+		pixelColor = GetGradientColor(defBckColor, color, (float)((1 - (x0 - (int)x0)) * (1 - (y0 - (int)y0))));
+		dest_buffer4[xend + (yend)*lpitch_4] = pixelColor;
+
+		pixelColor = GetGradientColor(defBckColor, color, (float)((1 - (x0 - (int)x0)) *  (y0 - (int)y0)));
+		dest_buffer4[xend + (yend+1)*lpitch_4] = pixelColor;
+
+		//обработать конечную точку
+		xend = (int)(x1+1.); //округление ввверх
+		yend = (int)y1; //округление вниз
+
+		//(x0 - (int)x0) - выделение части числа после зап€той
+		pixelColor = GetGradientColor(defBckColor, color, (float)((x1 - (int)x1) * (1 - (y1 - (int)y1))));
+		dest_buffer4[xend + (yend)*lpitch_4] = pixelColor;
+
+		pixelColor = GetGradientColor(defBckColor, color, (float)((x1 - (int)x1) *  (y1 - (int)y1)));
+		dest_buffer4[xend + (yend+1)*lpitch_4] = pixelColor;
+
+		//построение отрезка полностью
+		xscan = (int)(x0+1.); //округление вверх
+		xfinal = (int)(x1); //округление вниз
+		for(; xscan <= xfinal; xscan++){
+			yd = y0 + (xscan-x0)*gradient;
+			yi = (int)yd; //округление вниз
+			pixelColor = GetGradientColor(defBckColor, color, (float)(1 - (yd - (int)yd)));
+			dest_buffer4[xscan + (yi)*lpitch_4] = pixelColor;
+
+			pixelColor = GetGradientColor(defBckColor, color, (float)(yd - (int)yd));
+			dest_buffer4[xscan + (yi+1)*lpitch_4] = pixelColor;
+		}
+	}else{
+		dy = y1 - y0;
+		if(dy < 0){
+			//помен€ть местами точки
+			temp = x0;
+			x0=x1;
+			x1 = temp;
+			temp = y0;
+			y0=y1;
+			y1=temp;
+
+			dy = y1 - y0;
+		}
+		dx = x1 - x0;
+
+		gradient = dx/dy;
+
+		//обработать начальную точку
+		xend = (int)x0; //округление вниз
+		yend = (int)y0; //округление вниз
+
+		//(x0 - (int)x0) - выделение части числа после зап€той
+		pixelColor = GetGradientColor(defBckColor, color, (float)((1 - (x0 - (int)x0)) * (1 - (y0 - (int)y0))));
+		dest_buffer4[xend + yend*lpitch_4] = pixelColor;
+
+		pixelColor = GetGradientColor(defBckColor, color, (float)((x0 - (int)x0) *  (1 - (y0 - (int)y0))));
+		dest_buffer4[xend+1 + yend*lpitch_4] = pixelColor;
+
+		//обработать конечную точку
+		xend = (int)x1; 	//округление вниз
+		yend = (int)(y1+1.); //округление ввверх
+
+		//(x0 - (int)x0) - выделение части числа после зап€той
+		pixelColor = GetGradientColor(defBckColor, color, (float)((1 -(x1 - (int)x1)) * (y1 - (int)y1)));
+		dest_buffer4[xend + yend*lpitch_4] = pixelColor;
+
+		pixelColor = GetGradientColor(defBckColor, color, (float)((x1 - (int)x1) *  (y1 - (int)y1)));
+		dest_buffer4[xend+1 + yend*lpitch_4] = pixelColor;
+
+		//построение отрезка полностью
+		yscan = (int)(y0+1.); //округление вверх
+		yfinal = (int)(y1); //округление вниз
+		for(; yscan <= yfinal; yscan++){
+			xd = x0 + (yscan-y0)*gradient;
+			xi = (int)xd; //округление вниз
+			pixelColor = GetGradientColor(defBckColor, color, (float)(1 - (xd - (int)xd)));
+			dest_buffer4[xi + yscan*lpitch_4] = pixelColor;
+
+			pixelColor = GetGradientColor(defBckColor, color, (float)(xd - (int)xd));
+			dest_buffer4[xi+1 + yscan*lpitch_4] = pixelColor;
+		}
+	}
+	// return success
+	return(0);
+
+} // end Draw_WuLine
 
 //////////////////////////////////////////////////////////
 UCHAR *DDraw_Lock_Surface(LPDIRECTDRAWSURFACE7 lpdds, int *lpitch)
@@ -288,7 +411,7 @@ return(1);
 ///////////////////////////////////////////////////////////
 int Draw_HLine(int x0, int y0, // starting position
                 int x1, int y1, // ending position
-                COLORREF color,     // color index
+                DWORD color,     // color index
                 UCHAR *dest_buffer, int lpitch) // video buffer and memory pitch
 {
 // this function draws a horizontal line from xo,yo to x1,y1 using differential error
@@ -338,7 +461,7 @@ int Draw_HLine(int x0, int y0, // starting position
 ///////////////////////////////////////////////////////////
 int Draw_HLine(	float x0f, float y0f, // starting position
 				float x1f, float y1f, // ending position
-                COLORREF color,     // color index
+                DWORD color,     // color index
                 UCHAR *dest_buffer, int lpitch) // video buffer and memory pitch
 {
 	int x0 = (int)(x0f+0.5);
@@ -354,7 +477,7 @@ int Draw_HLine(	float x0f, float y0f, // starting position
 ///////////////////////////////////////////////////////////
 int Draw_HLine(	double x0d, double y0d, // starting position
 				double x1d, double y1d, // ending position
-                COLORREF color,     // color index
+                DWORD color,     // color index
                 UCHAR *dest_buffer, int lpitch) // video buffer and memory pitch
 {
 	int x0 = (int)(x0d+0.5);
@@ -369,7 +492,7 @@ int Draw_HLine(	double x0d, double y0d, // starting position
 ///////////////////////////////////////////////////////////
 int Draw_Line(int x0, int y0, // starting position
                 int x1, int y1, // ending position
-                COLORREF color,     // color index
+                DWORD color,     // color index
                 UCHAR *dest_buffer, int lpitch) // video buffer and memory pitch
 {
 // this function draws a line from xo,yo to x1,y1 using differential error
@@ -492,7 +615,7 @@ return(0);
 
 int Draw_Line(	float x0f, float y0f, // starting position
 				float x1f, float y1f, // ending position
-                COLORREF color,     // color index
+                DWORD color,     // color index
                 UCHAR *dest_buffer, int lpitch) // video buffer and memory pitch
 {
 	int x0 = (int)(x0f+0.5);
@@ -508,7 +631,7 @@ int Draw_Line(	float x0f, float y0f, // starting position
 
 int Draw_Line(	double x0d, double y0d, // starting position
 				double x1d, double y1d, // ending position
-                COLORREF color,     // color index
+                DWORD color,     // color index
                 UCHAR *dest_buffer, int lpitch) // video buffer and memory pitch
 {
 	int x0 = (int)(x0d+0.5);
@@ -835,7 +958,7 @@ int DDraw_Init(int width, int height)
 	lpddsback = DDraw_Create_Surface(width, height, DDSCAPS_SYSTEMMEMORY); // int mem_flags, USHORT color_key_flag);
 
 	// only clear backbuffer
-	DDraw_Fill_Surface(lpddsback,0);
+	DDraw_Fill_Surface(lpddsback,defBckColor);
 
 
 	// set globals
@@ -923,3 +1046,28 @@ DWORD Start_Clock(void){
 } // end Start_Clock
 
 ///////////////////////////////////////////////////////////
+//функци€ возвращает промежуточный цвет
+//заданный начальным значением цвета fromColor
+//конечным значением цвета toColor
+//и коэффициентом koef
+//расчет дл€ каждой составл€ющей цвета:
+//fromColor + (toColor - fromColor) * koef
+DWORD GetGradientColor(DWORD fromColor, DWORD toColor, float koef){
+	BYTE RfromColor = (fromColor >> 16) & 0x000000FF;
+	BYTE GfromColor = (fromColor >> 8) & 0x000000FF;
+	BYTE BfromColor = fromColor & 0x000000FF;
+
+	BYTE RtoColor = (toColor >> 16) & 0x000000FF;
+	BYTE GtoColor = (toColor >> 8) & 0x000000FF;
+	BYTE BtoColor = toColor & 0x000000FF;
+
+	SHORT deltaR = RtoColor - RfromColor;
+	SHORT deltaG = GtoColor - GfromColor;
+	SHORT deltaB = BtoColor - BfromColor;
+
+	BYTE Rcolor = (BYTE)(RfromColor + deltaR*koef );
+	BYTE Gcolor = (BYTE)(GfromColor + deltaG*koef );
+	BYTE Bcolor = (BYTE)(BfromColor + deltaB*koef );
+
+	return _RGB32BIT(0, Rcolor, Gcolor, Bcolor);
+}
